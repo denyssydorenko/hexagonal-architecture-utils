@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+
+  prometheus:
+    container_name: api-prometheus
+    image: prom/prometheus
+    user: root
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    volumes:
+      - "./../../ddl/prometheus/:/etc/prometheus/"
+    ports:
+      - "9090:9090"
+    networks:
+      - local
+
+  grafana:
+    container_name: api-grafana
+    image: grafana/grafana:10.2.4
+    user: root
+    volumes:
+      - "./../../ddl/grafana/provisioning/:/etc/grafana/provisioning/"
+      - "../../../dashboards/:/var/lib/grafana/dashboards/"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - local
+
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "4317"        # OTLP gRPC default port
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - local
+  
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./../../ddl/otel-collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" #OTLP gRPC receiver port
+    depends_on:
+      - jaeger
+    networks:
+      - local
+
+  splunk:
+    container_name: splunk
+    image: splunk/splunk:9.2.0
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_HEC_TOKEN=00000000-0000-0000-0000-0000000000000
+      - SPLUNK_PASSWORD=changeme
+    ports:
+      - 8000:8000
+      - 8088:8088
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - ./../../ddl/splunk/splunk.yml:/tmp/defaults/default.yml
+      - /opt/splunk/var
+      - /opt/splunk/etc
+    networks:
+      - local
+
+  fluent-bit:
+    image: fluent/fluent-bit
+    volumes:
+      - ./../../ddl/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+    depends_on:
+      splunk:
+        condition: service_healthy
+    ports:
+      - "24224:24224"
+  
+  postgres:
+    image: postgres
+    volumes:
+      - ./../../ddl/db/schema/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hexagonal_architecture_utils"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    networks:
+      - local
+  
+  api:
+    build:
+      context: ../../../
+      dockerfile: build/packages/api/Dockerfile
+      args: 
+        BUILD_VERSION: compose_dev
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: "localhost:24224"
+        tag: 'containerssh.{{.ID}}'
+    depends_on:
+      otel-collector:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      fluent-bit:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      OTEL_EXPORTER_OTLP_HOST: otel-collector
+      OTEL_EXPORTER_OTLP_PORT: 4317
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: hexagonal_architecture_utils
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD:
+    networks:
+      - local
+
+networks:
+  local:
