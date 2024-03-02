@@ -1,0 +1,8 @@
+HTTP:
+  HOST_ADDRESS: ":8080"
+  SERVICE_NAME: "hexagonal-architecture-utils"
+  BASE_PATH: "/api"
+  SHUTDOWN_TIMEOUT: 30s
+  TIMEOUT: 180s
+DB:
+  MIN_OPEN_CONNECTIONS: 5
