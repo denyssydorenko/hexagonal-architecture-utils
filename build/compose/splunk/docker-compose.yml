@@ -72,7 +72,6 @@ services:
       DATABASE_NAME: hexagonal_architecture_utils
       DATABASE_USER: postgres
       DATABASE_PASSWORD:
-      OTEL_EXPORTER_OTLP_ENDPOINT: otelcollector:18088
     networks:
       - local
 

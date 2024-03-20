@@ -22,7 +22,7 @@ type Database struct {
 
 type Otel struct {
 	Host string `env:"OTEL_EXPORTER_OTLP_HOST"`
-	Path string `env:"OTEL_EXPORTER_OTLP_PATH"`
+	Port string `env:"OTEL_EXPORTER_OTLP_PORT"`
 }
 
 type Nats struct {
@@ -60,12 +60,8 @@ func (c *Config) DBPassword() string {
 	return c.infraConf.Database.Password
 }
 
-func (c *Config) OtelHost() string {
-	return c.infraConf.Otel.Host
-}
-
-func (c *Config) OtelPath() string {
-	return c.infraConf.Otel.Path
+func (c *Config) OtelURL() string {
+	return fmt.Sprintf("%s:%d", c.infraConf.Otel.Host, c.infraConf.Otel.Port)
 }
 
 func (c *Config) NatsURL() string {

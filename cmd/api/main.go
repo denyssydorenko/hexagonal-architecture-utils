@@ -37,10 +37,11 @@ func main() {
 	}
 	config.BuildVersion = version
 
-	err = otel.InitTelemetryProvider(ctx, config.Configuration.ServiceName(), config.Configuration.OtelHost(), config.Configuration.OtelPath())
+	traceProvider, err := otel.InitProvider(ctx, config.Configuration.ServiceName(), config.Configuration.OtelURL())
 	if err != nil {
 		logging.Global.Error(ctx, fmt.Sprintf("error initializing telemetry provider [%v]", err))
 	}
+	defer traceProvider.Shutdown(ctx)
 
 	dbAdapter, err := db.NewAdapter(ctx, &config.Configuration)
 	if err != nil {

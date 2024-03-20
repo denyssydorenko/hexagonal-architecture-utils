@@ -21,6 +21,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	echoswagger "github.com/swaggo/echo-swagger"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -97,6 +100,9 @@ func NewAdapter(api ports.ApiPort, host string, port int) *Adapter {
 		}
 	})
 
+	// enable traces
+	e.Use(otelecho.Middleware(config.Configuration.ServiceName()))
+
 	// assign server to adapter
 	adapter.server = e
 
@@ -137,6 +143,12 @@ func (ad *Adapter) addHandlers() {
 	ad.server.GET(config.Configuration.BasePath()+"/v1/db/get-all", ad.GetAllDB)
 	ad.server.POST(config.Configuration.BasePath()+"/v1/db/update", ad.UpdateDB)
 	ad.server.DELETE(config.Configuration.BasePath()+"/v1/db/delete", ad.DeleteDB)
+}
+
+func (ad *Adapter) setTracingXTraceId(ctx context.Context) {
+	span := trace.SpanFromContext(ctx)
+	xtraceidString := fmt.Sprintf("%s", ctx.Value(domain.XTRACEID))
+	span.SetAttributes(attribute.String(domain.XTRACEID, xtraceidString))
 }
 
 func (ad *Adapter) Start(ctx context.Context, shutdownCallback func()) {
@@ -203,6 +215,8 @@ func (ad *Adapter) Health(c echo.Context) error {
 func (ad *Adapter) CreateDB(c echo.Context) error {
 	ctx := c.Request().Context()
 
+	ad.setTracingXTraceId(ctx)
+
 	var user db.CreateRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&user)
 	if err != nil {
@@ -230,6 +244,8 @@ func (ad *Adapter) CreateDB(c echo.Context) error {
 func (ad *Adapter) GetDB(c echo.Context) error {
 	ctx := c.Request().Context()
 
+	ad.setTracingXTraceId(ctx)
+
 	id := c.QueryParam("id")
 
 	resp, err := ad.api.DBGet(ctx, uuid.MustParse(id))
@@ -255,6 +271,8 @@ func (ad *Adapter) GetDB(c echo.Context) error {
 func (ad *Adapter) GetAllDB(c echo.Context) error {
 	ctx := c.Request().Context()
 
+	ad.setTracingXTraceId(ctx)
+
 	resp, err := ad.api.DBGetAll(ctx)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -278,6 +296,8 @@ func (ad *Adapter) GetAllDB(c echo.Context) error {
 // @Router /api/db/update [post]
 func (ad *Adapter) UpdateDB(c echo.Context) error {
 	ctx := c.Request().Context()
+
+	ad.setTracingXTraceId(ctx)
 
 	var req db.UpdateRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&req)
@@ -305,6 +325,8 @@ func (ad *Adapter) UpdateDB(c echo.Context) error {
 // @Router /api/db/delete [delete]
 func (ad *Adapter) DeleteDB(c echo.Context) error {
 	ctx := c.Request().Context()
+
+	ad.setTracingXTraceId(ctx)
 
 	var req db.DeleteRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&req)

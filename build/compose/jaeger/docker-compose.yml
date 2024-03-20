@@ -2,38 +2,29 @@ version: '3.8'
 
 services:
 
-  prometheus:
-    container_name: api-prometheus
-    image: prom/prometheus
-    user: root
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.console.templates=/usr/share/prometheus/consoles"
-      - "--web.enable-lifecycle"
-    volumes:
-      - "./../../ddl/prometheus/:/etc/prometheus/"
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:latest
     ports:
-      - "9090:9090"
-    networks:
-      - local
-
-  grafana:
-    container_name: api-grafana
-    image: grafana/grafana:10.2.4
-    user: root
-    volumes:
-      - "./../../ddl/grafana/provisioning/:/etc/grafana/provisioning/"
-      - "../../../dashboards/:/var/lib/grafana/dashboards/"
-    ports:
-      - "3000:3000"
+      - "16686:16686" # Jaeger UI
+      - "14250" # Collector gRPC
     environment:
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - COLLECTOR_OTLP_ENABLED=true
     networks:
       - local
   
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./../../ddl/otel-collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" #OTLP gRPC receiver port
+    depends_on:
+      - jaeger
+    networks:
+      - local
+
   postgres:
     image: postgres
     volumes:
@@ -61,9 +52,13 @@ services:
     depends_on: 
       postgres:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
     ports:
       - "8080:8080"
     environment:
+      OTEL_EXPORTER_OTLP_HOST: otel-collector
+      OTEL_EXPORTER_OTLP_PORT: 4317
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
       DATABASE_NAME: hexagonal_architecture_utils

@@ -29,11 +29,10 @@ func InitMetrics() {
 	}, []string{"host", "database", "query", "success"})
 }
 
-// Metrics godoc
-// @Summary Shows service prometheus metrics
+// Metrics
+// @Summary Service prometheus metrics
 // @Description Shows service prometheus metrics
 // @Tags api
-// @ID metrics
 // @Produce plain
 // @Success 200 {string} string
 // @Router /api/metrics [get]
