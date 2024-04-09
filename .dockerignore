@@ -1,0 +1,11 @@
+# Exclude everything:
+*
+
+# Now un-exclude app functionalities:
+!cmd
+!config
+!docs
+!internal
+!vendor
+!go.mod
+!go.sum

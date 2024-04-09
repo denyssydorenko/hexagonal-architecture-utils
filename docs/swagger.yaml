@@ -1,0 +1,305 @@
+definitions:
+  config.AppConfig:
+    properties:
+      db:
+        $ref: '#/definitions/config.DB'
+      http:
+        $ref: '#/definitions/config.Http'
+    type: object
+  config.DB:
+    properties:
+      minOpenConns:
+        type: integer
+    type: object
+  config.Database:
+    properties:
+      host:
+        type: string
+      name:
+        type: string
+      port:
+        type: integer
+    type: object
+  config.Http:
+    properties:
+      basePath:
+        type: string
+      hostAddress:
+        type: string
+      serviceName:
+        type: string
+      shutdownTimeout:
+        $ref: '#/definitions/time.Duration'
+      timeout:
+        $ref: '#/definitions/time.Duration'
+    type: object
+  config.InfraConfig:
+    properties:
+      database:
+        $ref: '#/definitions/config.Database'
+      otel:
+        $ref: '#/definitions/config.Otel'
+    type: object
+  config.Otel:
+    properties:
+      host:
+        type: string
+      port:
+        type: integer
+    type: object
+  hexagonal-architexture-utils_internal_domains_db.CreateRequest:
+    properties:
+      age:
+        type: integer
+      country:
+        type: string
+      name:
+        type: string
+      surname:
+        type: string
+    type: object
+  hexagonal-architexture-utils_internal_domains_db.DeleteRequest:
+    properties:
+      id:
+        type: string
+    type: object
+  hexagonal-architexture-utils_internal_domains_db.ID:
+    properties:
+      id:
+        type: string
+    type: object
+  hexagonal-architexture-utils_internal_domains_db.UpdateRequest:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      surname:
+        type: string
+    type: object
+  hexagonal-architexture-utils_internal_domains_db.User:
+    properties:
+      age:
+        type: integer
+      country:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      surname:
+        type: string
+    type: object
+  hexagonal-architexture-utils_internal_domains_health.Health:
+    properties:
+      application:
+        $ref: '#/definitions/config.AppConfig'
+      healthy:
+        type: boolean
+      host:
+        type: string
+      infrastructure:
+        $ref: '#/definitions/config.InfraConfig'
+      version:
+        type: string
+    type: object
+  time.Duration:
+    enum:
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    type: integer
+    x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+info:
+  contact: {}
+paths:
+  /api/db/create:
+    put:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: x-trace-id
+        in: header
+        name: x-trace-id
+        type: string
+      - description: Create User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/hexagonal-architexture-utils_internal_domains_db.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hexagonal-architexture-utils_internal_domains_db.ID'
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Create User
+      tags:
+      - db
+  /api/db/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user name and surname by provided id
+      parameters:
+      - description: x-trace-id
+        in: header
+        name: x-trace-id
+        type: string
+      - description: Delete User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/hexagonal-architexture-utils_internal_domains_db.DeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete User by id
+      tags:
+      - db
+  /api/db/get:
+    get:
+      consumes:
+      - application/json
+      description: Get user
+      parameters:
+      - description: x-trace-id
+        in: header
+        name: x-trace-id
+        type: string
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hexagonal-architexture-utils_internal_domains_db.User'
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get User by ID
+      tags:
+      - db
+  /api/db/get-all:
+    get:
+      consumes:
+      - application/json
+      description: Get all users
+      parameters:
+      - description: x-trace-id
+        in: header
+        name: x-trace-id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/hexagonal-architexture-utils_internal_domains_db.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get All Users
+      tags:
+      - db
+  /api/db/update:
+    post:
+      consumes:
+      - application/json
+      description: Update user name and surname by provided id
+      parameters:
+      - description: x-trace-id
+        in: header
+        name: x-trace-id
+        type: string
+      - description: Update User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/hexagonal-architexture-utils_internal_domains_db.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hexagonal-architexture-utils_internal_domains_db.ID'
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Update User by id
+      tags:
+      - db
+  /api/health:
+    get:
+      consumes:
+      - application/json
+      description: Service Health
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Token:
+              description: qwerty
+              type: string
+          schema:
+            $ref: '#/definitions/hexagonal-architexture-utils_internal_domains_health.Health'
+        "503":
+          description: Service Unavailable
+          schema:
+            type: string
+      summary: Service Health
+      tags:
+      - api
+  /api/metrics:
+    get:
+      description: Shows service prometheus metrics
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Service prometheus metrics
+      tags:
+      - api
+swagger: "2.0"

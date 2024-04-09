@@ -1,0 +1,462 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/db/create": {
+            "put": {
+                "description": "Create user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "db"
+                ],
+                "summary": "Create User",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "x-trace-id",
+                        "name": "x-trace-id",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Create User Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hexagonal-architexture-utils_internal_domains_db.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hexagonal-architexture-utils_internal_domains_db.ID"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/api/db/delete": {
+            "delete": {
+                "description": "Delete user name and surname by provided id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "db"
+                ],
+                "summary": "Delete User by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "x-trace-id",
+                        "name": "x-trace-id",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Delete User Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hexagonal-architexture-utils_internal_domains_db.DeleteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/api/db/get": {
+            "get": {
+                "description": "Get user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "db"
+                ],
+                "summary": "Get User by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "x-trace-id",
+                        "name": "x-trace-id",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hexagonal-architexture-utils_internal_domains_db.User"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/api/db/get-all": {
+            "get": {
+                "description": "Get all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "db"
+                ],
+                "summary": "Get All Users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "x-trace-id",
+                        "name": "x-trace-id",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/hexagonal-architexture-utils_internal_domains_db.User"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/api/db/update": {
+            "post": {
+                "description": "Update user name and surname by provided id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "db"
+                ],
+                "summary": "Update User by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "x-trace-id",
+                        "name": "x-trace-id",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Update User Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hexagonal-architexture-utils_internal_domains_db.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hexagonal-architexture-utils_internal_domains_db.ID"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/api/health": {
+            "get": {
+                "description": "Service Health",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Service Health",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hexagonal-architexture-utils_internal_domains_health.Health"
+                        },
+                        "headers": {
+                            "Token": {
+                                "type": "string",
+                                "description": "qwerty"
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metrics": {
+            "get": {
+                "description": "Shows service prometheus metrics",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Service prometheus metrics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "config.AppConfig": {
+            "type": "object",
+            "properties": {
+                "db": {
+                    "$ref": "#/definitions/config.DB"
+                },
+                "http": {
+                    "$ref": "#/definitions/config.Http"
+                }
+            }
+        },
+        "config.DB": {
+            "type": "object",
+            "properties": {
+                "minOpenConns": {
+                    "type": "integer"
+                }
+            }
+        },
+        "config.Database": {
+            "type": "object",
+            "properties": {
+                "host": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
+        "config.Http": {
+            "type": "object",
+            "properties": {
+                "basePath": {
+                    "type": "string"
+                },
+                "hostAddress": {
+                    "type": "string"
+                },
+                "serviceName": {
+                    "type": "string"
+                },
+                "shutdownTimeout": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "timeout": {
+                    "$ref": "#/definitions/time.Duration"
+                }
+            }
+        },
+        "config.InfraConfig": {
+            "type": "object",
+            "properties": {
+                "database": {
+                    "$ref": "#/definitions/config.Database"
+                },
+                "otel": {
+                    "$ref": "#/definitions/config.Otel"
+                }
+            }
+        },
+        "config.Otel": {
+            "type": "object",
+            "properties": {
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
+        "hexagonal-architexture-utils_internal_domains_db.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "hexagonal-architexture-utils_internal_domains_db.DeleteRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "hexagonal-architexture-utils_internal_domains_db.ID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "hexagonal-architexture-utils_internal_domains_db.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "hexagonal-architexture-utils_internal_domains_db.User": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "hexagonal-architexture-utils_internal_domains_health.Health": {
+            "type": "object",
+            "properties": {
+                "application": {
+                    "$ref": "#/definitions/config.AppConfig"
+                },
+                "healthy": {
+                    "type": "boolean"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "infrastructure": {
+                    "$ref": "#/definitions/config.InfraConfig"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "time.Duration": {
+            "type": "integer",
+            "enum": [
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
+            ],
+            "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour"
+            ]
+        }
+    }
+}
